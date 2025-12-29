@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sauvir's Portfolio | CSE @ IIIT Kota</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #020205;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); color: #e0e0e0; overflow: hidden; height: 100vh; }
+
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* Navigation */
+        nav {
+            position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between;
+            align-items: center; padding: 25px 8%; z-index: 100; background: rgba(2, 2, 5, 0.85);
+            backdrop-filter: blur(15px); border-bottom: 1px solid var(--border);
+        }
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+        nav ul { display: flex; list-style: none; gap: 25px; }
+        nav ul li a { 
+            color: white; text-decoration: none; font-size: 0.8rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6; transition: 0.3s; cursor: pointer;
+        }
+        nav ul li a.active, nav ul li a:hover { opacity: 1; color: var(--primary); }
+
+        /* Page Handling */
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; align-items: center; justify-content: center; padding: 100px 8% 40px 8%;
+            z-index: 10; opacity: 0; pointer-events: none; transform: scale(0.98); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page.active { opacity: 1; pointer-events: all; transform: scale(1); }
+
+        .glass-container {
+            width: 100%; max-width: 1100px; height: 80vh; background: var(--glass);
+            backdrop-filter: blur(30px); padding: 50px; border-radius: 30px;
+            border: 1px solid var(--border); overflow-y: auto; scrollbar-width: thin;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        h1 { font-size: 3.5rem; margin-bottom: 10px; color: #fff; font-weight: 800; }
+        h2 { color: var(--primary); margin: 35px 0 15px 0; border-left: 4px solid var(--primary); padding-left: 15px; text-transform: uppercase; font-size: 1.2rem; }
+        p { line-height: 1.8; margin-bottom: 20px; font-size: 1rem; color: #ccc; }
+
+        /* Project Section Styling */
+        .project-block { margin-bottom: 50px; padding-bottom: 30px; border-bottom: 1px solid var(--border); }
+        .project-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+        .project-title { font-size: 1.8rem; color: #fff; font-weight: 700; }
+        .project-tech { font-size: 0.85rem; color: var(--primary); font-weight: 600; background: rgba(0, 242, 255, 0.1); padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(0, 242, 255, 0.2); }
+        
+        ul.resume-list { padding-left: 20px; list-style-type: square; }
+        ul.resume-list li { margin-bottom: 14px; line-height: 1.7; color: #ddd; }
+
+        /* Skill Grid */
+        .skill-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 35px; margin-top: 25px; }
+        .skill-category h4 { color: var(--primary); margin-bottom: 15px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tag { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; color: #fff; transition: 0.3s; }
+        .tag:hover { border-color: var(--primary); background: rgba(0, 242, 255, 0.1); }
+
+        /* Buttons */
+        .btn {
+            display: inline-block; margin-top: 10px; padding: 14px 35px; background: var(--primary);
+            color: #000; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
+            transition: 0.4s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn:hover { background: #fff; box-shadow: 0 0 25px var(--primary); transform: translateY(-3px); }
+
+        .glass-container::-webkit-scrollbar { width: 6px; }
+        .glass-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="showPage('home')" style="cursor:pointer">Sauvir's Portfolio</div>
+        <ul>
+            <li><a onclick="showPage('home')" id="link-home" class="active">Profile</a></li>
+            <li><a onclick="showPage('projects')" id="link-projects">Projects</a></li>
+            <li><a onclick="showPage('skills')" id="link-skills">Skills</a></li>
+            <li><a onclick="showPage('achievements')" id="link-achievements">Impact</a></li>
+        </ul>
+    </nav>
+
+    <div id="canvas-container"></div>
+
+    <section id="home" class="page active">
+        <div class="glass-container">
+            <h1>Sauvir Wodehra</h1>
+            <p style="font-size: 1.3rem; color: var(--primary); font-weight: 600; margin-bottom: 30px;">
+                Computer Science & Engineering | Indian Institute of Information Technology, Kota
+            </p>
+            
+            <h2>Personal Profile</h2>
+            <p>
+                I am a dedicated Computer Science student at IIIT Kota with a CGPA of 7.8. 
+                My expertise lies in developing scalable full-stack applications, secure image processing pipelines, 
+                and cross-platform mobile solutions. I am passionate about utilizing 
+                Generative AI and modern frameworks to solve complex problems.
+            </p>
+            
+            <h2>Current Engagement</h2>
+            <ul class="resume-list">
+                <li>
+                    <strong>Senior Tech Lead at Paryavaran Shakti Club:</strong> 
+                    Currently directing and mentoring a team of 50+ members. 
+                    I lead strategic discussions and conduct workshops to explain complex methodologies 
+                    for over 10 eco-tech and sustainability projects.
+                </li>
+            </ul>
+            <br>
+            <button class="btn" onclick="showPage('projects')">Explore Projects</button>
+        </div>
+    </section>
+
+    <section id="projects" class="page">
+        <div class="glass-container">
+            <h1>Technical Projects</h1>
+            
+            <div class="project-block">
+                <div class="project-header">
+                    <span class="project-title">Quick Court (Sports Venue Booking)</span>
+                    <span class="project-tech">React.js, Node.js, PostgreSQL, Supabase, Socket.IO</span>
+                </div>
+                <ul class="resume-list">
+                    <li>Planned a scalable full-stack booking platform using React.js, Node.js, PostgreSQL, and Supabase to support 1,000+ users.</li>
+                    <li>Engineered secure multi-role authentication and robust REST APIs to provide differentiated access for facility owners and administrators.</li>
+                    <li>Orchestrated real-time booking synchronization and notifications with Socket.IO to enable conflict-free slot reservations across devices.</li>
+                    <li>Integrated React Hot Toast for intuitive user feedback and built detailed analytics dashboards with Recharts for facility owners.</li>
+                    <li>Optimized complex database queries and UI responsiveness to ensure a seamless experience for administrators.</li>
+                    <li>Hardened overall security using JWT authentication, bcrypt password hashing, and strict input validation.</li>
+                    <li>Incorporated Stripe for payments, EmailJS for automated messaging, and Lucide React for modern iconography.</li>
+                </ul>
+            </div>
+
+            <div class="project-block">
+                <div class="project-header">
+                    <span class="project-title">Secure Image Steganography</span>
+                    <span class="project-tech">Python, OpenCV</span>
+                </div>
+                <ul class="resume-list">
+                    <li>Created a robust image steganography pipeline in Python using OpenCV, enabling reliable embedding of confidential text with minimal visual distortion.</li>
+                    <li>Implemented LSB-based encoding and decoding logic, achieving 100% accurate message recovery across standard image formats and resolutions.</li>
+                    <li>Added password-based access control and validation checks to enhance data confidentiality and prevent unauthorized extraction.</li>
+                    <li>Evaluated output image quality through pixel-difference analysis and visual inspection to ensure imperceptibility of embedded data.</li>
+                </ul>
+            </div>
+
+            <div class="project-block">
+                <div class="project-header">
+                    <span class="project-title">NeuroPath (Career Guidance Platform)</span>
+                    <span class="project-tech">Flutter, Spring Boot, PostgreSQL, Apache Tika</span>
+                </div>
+                <ul class="resume-list">
+                    <li>Developed a cross-platform mobile application using Flutter with a Spring Boot and PostgreSQL backend, implementing resume parsing via Apache Tika.</li>
+                    <li>Delivered a production-ready Flutter UI merged with Spring Mail and Spring Security, supporting 500+ authenticated sessions.</li>
+                    <li>Engineered real-time email notifications and achieved a sub-300 ms API response time for critical career guidance services.</li>
+                    <li>Structured modular service and repository layers to improve system maintainability, scalability, and future expansion.</li>
+                    <li>Supported and managed data for 100+ active user profiles within the guidance ecosystem.</li>
+                </ul>
+            </div>
+            <button class="btn" onclick="showPage('skills')">Next: Skills</button>
+        </div>
+    </section>
+
+    <section id="skills" class="page">
+        <div class="glass-container">
+            <h1>Skill Stack</h1>
+            <div class="skill-grid">
+                <div class="skill-category">
+                    <h4>Languages</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">Java</span> <span class="tag">C++</span> <span class="tag">Python</span> 
+                        <span class="tag">C</span> 
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h4>Frameworks & Libraries</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">Spring Boot</span> <span class="tag">Hibernate</span> <span class="tag">Flutter</span> 
+                        <span class="tag">Pandas</span> <span class="tag">NumPy</span> <span class="tag">Matplotlib</span> <span class="tag">Seaborn</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h4>Generative AI & Agentic Tools</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">OpenAI API</span> <span class="tag">LangChain</span> <span class="tag">Hugging Face Transformers</span> 
+                        <span class="tag">Pinecone</span> <span class="tag">Vector Databases</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h4>Machine Learning / AI</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">Scikit-learn</span> <span class="tag">Neural Networks</span> 
+                        <span class="tag">Deep Learning (TensorFlow, Keras)</span> <span class="tag">NLP (NLTK, spaCy)</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h4>Databases & Messaging</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">PostgreSQL</span> <span class="tag">MySQL</span> <span class="tag">Kafka</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h4>Dev Tools</h4>
+                    <div class="tag-cloud">
+                        <span class="tag">GitHub</span> <span class="tag">Docker</span> <span class="tag">Postman</span> 
+                        <span class="tag">IntelliJ IDEA</span> <span class="tag">Jupyter Notebook</span> <span class="tag">Power BI</span>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <button class="btn" onclick="showPage('achievements')">View Achievements</button>
+        </div>
+    </section>
+
+    <section id="achievements" class="page">
+        <div class="glass-container">
+            <h1>National Impact</h1>
+            <ul class="resume-list" style="font-size: 1.1rem;">
+                <li>🏆 <strong>Hack to Crack 2.0:</strong> National-Level Winner, outperforming 50+ teams nationwide.</li>
+                <li>🏅 <strong>Odoo Hackathon 2025:</strong> Top 10 Finalist among 6,000+ teams.</li>
+                <li>🚀 <strong>Flipkart Grid 2025:</strong> Semi-finalist, outperforming 1,60,000+ participants.</li>
+                <li>📊 <strong>JEE Main 2023:</strong> AIR 27466 (Top 1.9% out of all applicants).</li>
+                <li>💻 <strong>Problem Solving:</strong> 4-star CodeChef rating and solved 600+ DSA problems.</li>
+            </ul>
+            
+            <div style="margin-top: 50px; text-align: center;">
+                <p>Interested in collaboration?</p>
+                <a href="mailto:sauvirwodehras3136@gmail.com" class="btn">Send Email</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // PAGE TRANSITION ENGINE
+        function showPage(pageId) {
+            // Update Active Link
+            document.querySelectorAll('nav ul li a').forEach(link => {
+                link.classList.remove('active');
+            });
+            const activeLink = document.getElementById('link-' + (pageId === 'achievements' ? 'achievements' : pageId));
+            if(activeLink) activeLink.classList.add('active');
+
+            // Switch Pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+
+            // Scroll to top of container
+            const container = document.querySelector(`#${pageId} .glass-container`);
+            if(container) container.scrollTop = 0;
+        }
+
+        // 3D BACKGROUND ENGINE (Neural Mesh)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const group = new THREE.Group();
+        const nodeGeom = new THREE.SphereGeometry(0.04, 8, 8);
+        const nodeMat = new THREE.MeshBasicMaterial({ color: 0x00f2ff });
+        
+        const nodes = [];
+        for(let i=0; i<90; i++) {
+            const mesh = new THREE.Mesh(nodeGeom, nodeMat);
+            mesh.position.set((Math.random()-0.5)*20, (Math.random()-0.5)*20, (Math.random()-0.5)*20);
+            nodes.push(mesh.position);
+            group.add(mesh);
+        }
+
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x00f2ff, transparent: true, opacity: 0.12 });
+        for(let i=0; i<nodes.length; i++) {
+            for(let j=i+1; j<nodes.length; j++) {
+                if(nodes[i].distanceTo(nodes[j]) < 3.8) {
+                    const lineGeom = new THREE.BufferGeometry().setFromPoints([nodes[i], nodes[j]]);
+                    const line = new THREE.Line(lineGeom, lineMat);
+                    group.add(line);
+                }
+            }
+        }
+
+        scene.add(group);
+        camera.position.z = 12;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            group.rotation.y += 0.001;
+            group.rotation.x += 0.0006;
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
